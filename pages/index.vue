@@ -96,6 +96,10 @@ const currentJoke = ref('')
 const isLoading = ref(false)
 const error = ref(null)
 
+const templates = ['smell', 'hope', 'still', 'heard']
+const styles = ['dry', 'shock', 'campy', 'sarcastic', 'absurd', 'wordplay', 'observational', 'surreal', 'deadpan']
+const intensities = ['3', '2', '1', '0', '-1', '-2', '-3']
+
 const generateJoke = async () => {
   if (isLoading.value) return
   
@@ -131,6 +135,16 @@ const generateJoke = async () => {
   }
 }
 
+const randomizeAndGenerate = () => {
+  // Randomize all selections
+  selectedTemplate.value = templates[Math.floor(Math.random() * templates.length)]
+  humorStyle.value = styles[Math.floor(Math.random() * styles.length)]
+  humorIntensity.value = intensities[Math.floor(Math.random() * intensities.length)]
+  
+  // Generate the roast
+  generateJoke()
+}
+
 // Shake detection
 let shakeEvent
 
@@ -143,14 +157,14 @@ onMounted(() => {
       })
       
       shakeEvent.start()
-      window.addEventListener('shake', generateJoke)
+      window.addEventListener('shake', randomizeAndGenerate)
     })
   }
 })
 
 onUnmounted(() => {
   if (shakeEvent) {
-    window.removeEventListener('shake', generateJoke)
+    window.removeEventListener('shake', randomizeAndGenerate)
     shakeEvent.stop()
   }
 })

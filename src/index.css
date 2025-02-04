@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+input,
+textarea,
+select {
+  @apply bg-transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}

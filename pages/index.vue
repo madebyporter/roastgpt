@@ -52,11 +52,11 @@
         </div>
       </div>
 
-      <div class="min-h-24 bg-white/20 backdrop-blur rounded-lg p-4 text-lg">
+      <div class="min-h-24 bg-white text-black rounded-lg p-4 text-lg">
         <div v-if="isLoading" class="flex items-center justify-center h-full">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
         </div>
-        <div v-else-if="error" class="text-red-300">
+        <div v-else-if="error" class="text-red-500">
           {{ error }}
         </div>
         <div v-else>

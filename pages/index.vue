@@ -7,6 +7,8 @@
 
     <div class="bg-white/10 backdrop-blur-lg rounded-xl p-6 space-y-4">
       <div class="space-y-4">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-purple-200">Setup</label>
         <select 
           v-model="selectedTemplate" 
           class="w-full bg-white text-black rounded-lg px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
@@ -16,6 +18,7 @@
           <option value="still">Don't you still _____</option>
           <option value="heard">I heard you _____. How's that been going for you?</option>
         </select>
+        </div>
 
         <div class="space-y-2">
           <label class="block text-sm font-medium text-purple-200">Humor Style</label>
@@ -41,26 +44,14 @@
             v-model="humorIntensity" 
             class="w-full bg-white text-black rounded-lg px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
-            <option value="3">Lightest (Super gentle)</option>
-            <option value="2">Lighter (Very mild)</option>
-            <option value="1">Light (Playful)</option>
-            <option value="0">Neutral (Balanced)</option>
-            <option value="-1">Dark (Spicy)</option>
-            <option value="-2">Darker (Extra spicy)</option>
-            <option value="-3">Darkest (Nuclear)</option>
+            <option value="3">Wholesome (Family-friendly)</option>
+            <option value="2">Playful (Light teasing)</option>
+            <option value="1">Sassy (Mild burns)</option>
+            <option value="0">Sharp (Reality checks)</option>
+            <option value="-1">Brutal (Hard truths)</option>
+            <option value="-2">Savage (Emotional damage)</option>
+            <option value="-3">Going to Hell Dark (Gallows humor)</option>
           </select>
-        </div>
-      </div>
-
-      <div class="min-h-24 bg-white text-black rounded-lg p-4 text-lg">
-        <div v-if="isLoading" class="flex items-center justify-center h-full">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-        </div>
-        <div v-else-if="error" class="text-red-500">
-          {{ error }}
-        </div>
-        <div v-else>
-          {{ currentJoke || 'Your roast will appear here...' }}
         </div>
       </div>
 
@@ -72,6 +63,20 @@
         <Zap class="w-5 h-5" :class="{ 'animate-pulse': isLoading }" />
         {{ isLoading ? 'Generating...' : 'Generate Roast' }}
       </button>
+
+
+
+      <div class="min-h-24 bg-transparent border border-white/20 text-white rounded-lg p-4 text-lg">
+        <div v-if="isLoading" class="flex items-center justify-center h-full">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+        </div>
+        <div v-else-if="error" class="text-red-500">
+          {{ error }}
+        </div>
+        <div v-else>
+          {{ currentJoke || 'Your roast will appear here...' }}
+        </div>
+      </div>
     </div>
 
     <div class="text-center text-sm text-purple-200">
@@ -116,21 +121,7 @@ const generateJoke = async () => {
     }
 
     const data = await response.json()
-    
-    switch (selectedTemplate.value) {
-      case 'smell':
-        currentJoke.value = `You smell like ${data.completion}`
-        break
-      case 'hope':
-        currentJoke.value = `I hope you ${data.completion}`
-        break
-      case 'still':
-        currentJoke.value = `Don't you still ${data.completion}`
-        break
-      case 'heard':
-        currentJoke.value = `I heard you ${data.completion}. How's that been going for you?`
-        break
-    }
+    currentJoke.value = data.completion
   } catch (err) {
     console.error('Error:', err)
     error.value = err.message || 'Failed to generate a roast. Try again!'

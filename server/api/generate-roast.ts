@@ -39,13 +39,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const intensityDescriptions = {
-      3: "extremely gentle and lighthearted, suitable for all audiences",
-      2: "very mild and friendly, avoiding any edge",
-      1: "playful and light, with minimal bite",
-      0: "balanced humor, neither too gentle nor too sharp",
-      "-1": "slightly edgy humor with a bit of bite",
-      "-2": "sharper humor with more edge, but not cruel",
-      "-3": "maximum edge while staying within bounds of good taste"
+      3: "keeping it wholesome and family-friendly",
+      2: "using light-hearted teasing",
+      1: "delivering sassy comebacks",
+      0: "giving honest reality checks",
+      "-1": "delivering harsh life observations, like a drill sergeant's feedback",
+      "-2": "using ruthless psychological insights that cut deep",
+      "-3": "employing dark gallows humor like first responders use to cope with tough situations, while keeping it professional"
     }
 
     const prompts = {
@@ -86,8 +86,24 @@ export default defineEventHandler(async (event) => {
       .replace(/^i hope you /i, '')
       .replace(/^don't you still /i, '')
       .replace(/^i heard you /i, '')
-      .replace(/\. how'?s? that been going for you\??$/i, '')
+      .replace(/[\s.]?how'?s? that (?:been )?going for you\??$/i, '')
       .replace(/^["']|["']$/g, '') // Remove any quotes
+
+    // Apply the template on the server side
+    switch (template) {
+      case 'smell':
+        response = `You smell like ${response}`
+        break
+      case 'hope':
+        response = `I hope you ${response}`
+        break
+      case 'still':
+        response = `Don't you still ${response}`
+        break
+      case 'heard':
+        response = `I heard you ${response}. How's that been going for you?`
+        break
+    }
 
     if (!response) {
       throw createError({

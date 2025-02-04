@@ -9,7 +9,7 @@
       <div class="space-y-4">
         <select 
           v-model="selectedTemplate" 
-          class="w-full bg-white/20 backdrop-blur rounded-lg px-4 py-2 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-400"
+          class="w-full bg-white text-black rounded-lg px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
         >
           <option value="smell">You smell like _____</option>
           <option value="hope">I hope you _____</option>
@@ -21,7 +21,7 @@
           <label class="block text-sm font-medium text-purple-200">Humor Style</label>
           <select 
             v-model="humorStyle" 
-            class="w-full bg-white/20 backdrop-blur rounded-lg px-4 py-2 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            class="w-full bg-white text-black rounded-lg px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
             <option value="dry">Dry (Subtle and understated)</option>
             <option value="shock">Shock (Unexpected and surprising)</option>
@@ -39,7 +39,7 @@
           <label class="block text-sm font-medium text-purple-200">Humor Intensity</label>
           <select 
             v-model="humorIntensity" 
-            class="w-full bg-white/20 backdrop-blur rounded-lg px-4 py-2 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            class="w-full bg-white text-black rounded-lg px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
             <option value="3">Lightest (Super gentle)</option>
             <option value="2">Lighter (Very mild)</option>

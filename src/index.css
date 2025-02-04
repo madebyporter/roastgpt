@@ -3,10 +3,14 @@
 @tailwind utilities;
 
 input,
-textarea,
-select {
-  @apply bg-transparent;
+textarea {
+  @apply bg-white text-black border border-gray-300;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+}
+
+/* Handle select element options */
+select option {
+  @apply bg-white text-black;
 }

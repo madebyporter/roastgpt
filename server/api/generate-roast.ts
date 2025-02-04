@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
 
     const prompts = {
       smell: "IMPORTANT: Generate ONLY a smell-related description. Must be about an actual scent or odor. DO NOT include 'You smell like' in your response. BAD examples: 'You smell like a walking Wikipedia' or 'a lost dream'. GOOD examples: 'expired milk in a hot car' or 'gym socks marinated in cheap cologne'. Keep it about actual smells.",
-      hope: "IMPORTANT: DO NOT include 'I hope you' in your response. Generate ONLY the action that would come after those words. BAD example: 'I hope you stub your toe'. GOOD example: 'stub your toe'",
+      hope: "IMPORTANT: Generate ONLY a specific, real-life unfortunate event. Focus on embarrassing or inconvenient situations. DO NOT include 'I hope you' in your response. BAD examples: 'find happiness' or 'learn your lesson'. GOOD examples: 'trip in front of your crush', 'get caught singing in your car at a red light', 'accidentally like your ex's Instagram post from 3 years ago'. Keep it realistic and relatable.",
       still: "IMPORTANT: DO NOT include 'Don't you still' in your response. Generate ONLY the action that would come after those words. BAD example: 'Don't you still eat crayons'. GOOD example: 'eat crayons'",
       heard: "IMPORTANT: Generate a single, simple action or situation. DO NOT use multiple statements or complex scenarios. DO NOT include any introductory phrases. BAD examples: 'trying to find a personality while still using a flip phone' or 'collecting dust and failing at life'. GOOD examples: 'tried to high-five your reflection' or 'bought a brain from the dollar store'. Keep it short and focused on ONE thing."
     }

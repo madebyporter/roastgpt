@@ -27,32 +27,38 @@ export default defineEventHandler(async (event) => {
     }
 
     const styleDescriptions = {
-      dry: "Use subtle, understated humor with deadpan delivery",
-      shock: "Create unexpected, surprising humor that subverts expectations",
-      campy: "Use deliberately exaggerated, over-the-top humor",
-      sarcastic: "Employ ironic, witty humor with a hint of mockery",
-      absurd: "Generate nonsensical, random humor that defies logic",
-      wordplay: "Focus on puns, clever language, and double meanings",
+      // Generic Styles
+      dry: "Use deadpan delivery with matter-of-fact statements",
       observational: "Base humor on relatable, everyday situations",
-      surreal: "Create dreamlike, bizarre scenarios that are strangely funny",
-      deadpan: "Deliver humor in a completely serious, matter-of-fact way"
+      sarcastic: "Employ ironic, witty humor with a hint of mockery",
+      shock: "Create unexpected, surprising humor that subverts expectations",
+      wordplay: "Focus on puns, clever language, and double meanings",
+      absurd: "Generate nonsensical, random humor that defies logic",
+      lockerroom: "Use simple, playground-style humor with 'your mama' jokes and basic comebacks like you'd hear in a locker room",
+      
+      // Comedian-Specific Styles
+      pryor: "Channel Richard Pryor's raw, honest, street-smart observations with perfect timing and character work",
+      carlin: "Channel George Carlin's sharp social criticism with intelligent wordplay and counterculture perspective",
+      mac: "Channel Bernie Mac's bold, unapologetic storytelling with a mix of tough love and exaggerated reactions",
+      williams: "Channel Robin Williams' manic, high-energy stream of consciousness with rapid character switches",
+      chappelle: "Channel Dave Chappelle's clever social commentary with street-smart storytelling and race, gender, and cultural observations",
+      rock: "Channel Chris Rock's exaggerated delivery with hard-hitting social observations on race, political and relationship insights",
+      seinfeld: "Channel Jerry Seinfeld's meticulous observations about everyday life and human behavior",
+      burr: "Channel Bill Burr's aggressive, unapologetic rants with working-class perspective",
+      hedberg: "Channel Mitch Hedberg's surreal one-liners with unique observations and clever misdirection"
     }
 
     const intensityDescriptions = {
-      3: "keeping it wholesome and family-friendly",
-      2: "using light-hearted teasing",
-      1: "delivering sassy comebacks",
-      0: "giving honest reality checks",
-      "-1": "delivering harsh life observations, like a drill sergeant's feedback",
-      "-2": "using ruthless psychological insights that cut deep",
-      "-3": "employing dark gallows humor like first responders use to cope with tough situations, while keeping it professional"
+      1: "keeping it lighthearted and playful with gentle teasing",
+      0: "using balanced humor with honest observations and mild burns",
+      "-1": "delivering sharp reality checks with psychological insights that might sting"
     }
 
     const prompts = {
-      smell: "Generate a funny, creative roast completion. The roast will start with 'You smell like' but DO NOT include that part in your response. Keep it playful and not too offensive. Example response: 'a forgotten gym sock in a sauna'",
-      hope: "Generate a funny, creative roast completion. The roast will start with 'I hope you' but DO NOT include that part in your response. Keep it playful and not too offensive. Example response: 'step on a Lego while running late'",
-      still: "Generate a funny, creative roast completion. The roast will start with 'Don't you still' but DO NOT include that part in your response. Keep it playful and not too offensive. Example response: 'practice karate moves in front of your mirror'",
-      heard: "Generate a funny, creative roast completion. The roast will start with 'I heard you' and end with 'How's that been going for you?' but DO NOT include those parts in your response. Keep it playful and not too offensive. Example response: 'started a professional sock puppet theater'"
+      smell: "IMPORTANT: Generate ONLY a smell-related description. Must be about an actual scent or odor. DO NOT include 'You smell like' in your response. BAD examples: 'You smell like a walking Wikipedia' or 'a lost dream'. GOOD examples: 'expired milk in a hot car' or 'gym socks marinated in cheap cologne'. Keep it about actual smells.",
+      hope: "IMPORTANT: DO NOT include 'I hope you' in your response. Generate ONLY the action that would come after those words. BAD example: 'I hope you stub your toe'. GOOD example: 'stub your toe'",
+      still: "IMPORTANT: DO NOT include 'Don't you still' in your response. Generate ONLY the action that would come after those words. BAD example: 'Don't you still eat crayons'. GOOD example: 'eat crayons'",
+      heard: "IMPORTANT: DO NOT include any introductory phrases like 'You're' or 'I heard you' in your response. Generate ONLY the action/situation. BAD examples: 'You're collecting dust' or 'I heard you collect dust'. GOOD example: 'still collect dust in your parent's basement'"
     }
 
     if (!prompts[template]) {
@@ -63,7 +69,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -80,14 +86,10 @@ export default defineEventHandler(async (event) => {
 
     let response = completion.choices[0]?.message?.content?.trim() || ''
     
-    // Clean up any template text that might have been included
+    // Remove quotes and any "you're" prefix
     response = response
-      .replace(/^you smell like /i, '')
-      .replace(/^i hope you /i, '')
-      .replace(/^don't you still /i, '')
-      .replace(/^i heard you /i, '')
-      .replace(/[\s.]?how'?s? that (?:been )?going for you\??$/i, '')
-      .replace(/^["']|["']$/g, '') // Remove any quotes
+      .replace(/^["']|["']$/g, '')
+      .replace(/^you'?re\s+/i, '') // Remove "you're" or "youre" from the start
 
     // Apply the template on the server side
     switch (template) {

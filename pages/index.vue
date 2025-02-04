@@ -26,15 +26,26 @@
             v-model="humorStyle" 
             class="w-full bg-white text-black rounded-lg px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
-            <option value="dry">Dry (Subtle and understated)</option>
-            <option value="shock">Shock (Unexpected and surprising)</option>
-            <option value="campy">Campy (Deliberately exaggerated)</option>
-            <option value="sarcastic">Sarcastic (Ironic and witty)</option>
-            <option value="absurd">Absurd (Nonsensical and random)</option>
-            <option value="wordplay">Wordplay (Puns and clever language)</option>
-            <option value="observational">Observational (Everyday situations)</option>
-            <option value="surreal">Surreal (Dreamlike and bizarre)</option>
-            <option value="deadpan">Deadpan (Expressionless delivery)</option>
+            <optgroup label="Generic Styles">
+              <option value="lockerroom">Locker Room (Simple comebacks)</option>
+              <option value="dry">Dry (Deadpan delivery)</option>
+              <option value="observational">Observational (Everyday situations)</option>
+              <option value="sarcastic">Sarcastic (Ironic and witty)</option>
+              <option value="shock">Shock (Unexpected and surprising)</option>
+              <option value="wordplay">Wordplay (Clever language)</option>
+              <option value="absurd">Absurd (Random and illogical)</option>
+            </optgroup>
+            <optgroup label="Comedian Styles">
+              <option value="pryor">Richard Pryor Style (Raw, honest observations)</option>
+              <option value="carlin">George Carlin Style (Sharp social criticism)</option>
+              <option value="mac">Bernie Mac Style (Bold storytelling)</option>
+              <option value="williams">Robin Williams Style (High-energy, manic)</option>
+              <option value="chappelle">Dave Chappelle Style (Clever social commentary)</option>
+              <option value="rock">Chris Rock Style (Exaggerated observations)</option>
+              <option value="seinfeld">Jerry Seinfeld Style (Everyday observations)</option>
+              <option value="burr">Bill Burr Style (Aggressive, unapologetic)</option>
+              <option value="hedberg">Mitch Hedberg Style (Surreal one-liners)</option>
+            </optgroup>
           </select>
         </div>
 
@@ -44,13 +55,9 @@
             v-model="humorIntensity" 
             class="w-full bg-white text-black rounded-lg px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
-            <option value="3">Wholesome (Family-friendly)</option>
-            <option value="2">Playful (Light teasing)</option>
-            <option value="1">Sassy (Mild burns)</option>
-            <option value="0">Sharp (Reality checks)</option>
-            <option value="-1">Brutal (Hard truths)</option>
-            <option value="-2">Savage (Emotional damage)</option>
-            <option value="-3">Going to Hell Dark (Gallows humor)</option>
+            <option value="1">Light (Playful teasing)</option>
+            <option value="0">Neutral (Reality checks)</option>
+            <option value="-1">Dark (Sharp truths)</option>
           </select>
         </div>
       </div>
@@ -90,15 +97,15 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { Zap } from 'lucide-vue-next'
 
 const selectedTemplate = ref('smell')
-const humorStyle = ref('dry')
+const humorStyle = ref('lockerroom')
 const humorIntensity = ref('0')
 const currentJoke = ref('')
 const isLoading = ref(false)
 const error = ref(null)
 
 const templates = ['smell', 'hope', 'still', 'heard']
-const styles = ['dry', 'shock', 'campy', 'sarcastic', 'absurd', 'wordplay', 'observational', 'surreal', 'deadpan']
-const intensities = ['3', '2', '1', '0', '-1', '-2', '-3']
+const styles = ['lockerroom', 'dry', 'observational', 'sarcastic', 'shock', 'wordplay', 'absurd']
+const intensities = ['1', '0', '-1']
 
 const generateJoke = async () => {
   if (isLoading.value) return

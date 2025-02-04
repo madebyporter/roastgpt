@@ -28,13 +28,13 @@ export default defineEventHandler(async (event) => {
 
     const styleDescriptions = {
       // Generic Styles
+      lockerroom: "Use raw, unfiltered locker room trash talk that stings. Mix personal jabs about dating failures, embarrassing moments, and brutal truths. Think ruthless high school/college athlete burns. Examples: 'still using Pokemon pickup lines on Tinder', 'gets rejected by even the spam bots', 'peaked in kindergarten when you learned to tie your shoes'. Keep it personal and make it hurt, but stay away from serious topics.",
       dry: "Use deadpan delivery with matter-of-fact statements",
       observational: "Base humor on relatable, everyday situations",
       sarcastic: "Employ ironic, witty humor with a hint of mockery",
       shock: "Create unexpected, surprising humor that subverts expectations",
       wordplay: "Focus on puns, clever language, and double meanings",
       absurd: "Generate nonsensical, random humor that defies logic",
-      lockerroom: "Use simple, playground-style humor with 'your mama' jokes and basic comebacks like you'd hear in a locker room",
       
       // Comedian-Specific Styles
       pryor: "Channel Richard Pryor's raw, honest, street-smart observations with perfect timing and character work",
@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
       smell: "IMPORTANT: Generate ONLY a smell-related description. Must be about an actual scent or odor. DO NOT include 'You smell like' in your response. BAD examples: 'You smell like a walking Wikipedia' or 'a lost dream'. GOOD examples: 'expired milk in a hot car' or 'gym socks marinated in cheap cologne'. Keep it about actual smells.",
       hope: "IMPORTANT: DO NOT include 'I hope you' in your response. Generate ONLY the action that would come after those words. BAD example: 'I hope you stub your toe'. GOOD example: 'stub your toe'",
       still: "IMPORTANT: DO NOT include 'Don't you still' in your response. Generate ONLY the action that would come after those words. BAD example: 'Don't you still eat crayons'. GOOD example: 'eat crayons'",
-      heard: "IMPORTANT: DO NOT include any introductory phrases like 'You're' or 'I heard you' in your response. Generate ONLY the action/situation. BAD examples: 'You're collecting dust' or 'I heard you collect dust'. GOOD example: 'still collect dust in your parent's basement'"
+      heard: "IMPORTANT: Generate a single, simple action or situation. DO NOT use multiple statements or complex scenarios. DO NOT include any introductory phrases. BAD examples: 'trying to find a personality while still using a flip phone' or 'collecting dust and failing at life'. GOOD examples: 'tried to high-five your reflection' or 'bought a brain from the dollar store'. Keep it short and focused on ONE thing."
     }
 
     if (!prompts[template]) {

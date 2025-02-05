@@ -27,7 +27,7 @@
             class="w-full bg-white text-black rounded-lg px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
             <optgroup label="Generic Styles">
-              <option value="lockerroom">Locker Room (Simple comebacks)</option>
+              <option value="dumb">Dumb (Basic insults)</option>
               <option value="dry">Dry (Deadpan delivery)</option>
               <option value="observational">Observational (Everyday situations)</option>
               <option value="sarcastic">Sarcastic (Ironic and witty)</option>
@@ -97,14 +97,14 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { Zap } from 'lucide-vue-next'
 
 const selectedTemplate = ref('smell')
-const humorStyle = ref('lockerroom')
+const humorStyle = ref('dumb')
 const humorIntensity = ref('0')
 const currentJoke = ref('')
 const isLoading = ref(false)
 const error = ref(null)
 
 const templates = ['smell', 'hope', 'still', 'heard']
-const styles = ['lockerroom', 'dry', 'observational', 'sarcastic', 'shock', 'wordplay', 'absurd']
+const styles = ['dumb', 'dry', 'observational', 'sarcastic', 'shock', 'wordplay', 'absurd']
 const intensities = ['1', '0', '-1']
 
 const generateJoke = async () => {

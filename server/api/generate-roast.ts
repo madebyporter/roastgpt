@@ -1,6 +1,40 @@
 import OpenAI from 'openai'
 import { defineEventHandler, createError } from 'h3'
 
+// Add at the top of the file, outside the handler
+interface CachedResponse {
+  response: string
+  words: Set<string>
+  categories: Set<string>
+  timestamp: number
+}
+const lastResponses = new Map<string, CachedResponse>()
+const MAX_CACHE_SIZE = 50  // Increased from 10
+const WORD_COOLDOWN = 1000 * 60 * 5  // 5 minutes cooldown for repeated words
+
+// Common themes/categories to track
+const themeCategories = {
+  clothing: ['sock', 'shoe', 'shirt', 'pants', 'clothes', 'wear', 'wearing'],
+  gym: ['gym', 'sweat', 'workout', 'exercise', 'locker'],
+  food: ['cheese', 'milk', 'fish', 'food', 'eat', 'eating'],
+  animals: ['dog', 'cat', 'pet', 'animal'],
+  bathroom: ['toilet', 'bathroom', 'poop', 'fart'],
+  garbage: ['trash', 'garbage', 'dumpster', 'waste'],
+}
+
+// Helper function to detect themes
+const detectThemes = (text: string): Set<string> => {
+  const themes = new Set<string>()
+  const words = text.toLowerCase().split(/\W+/)
+  
+  for (const [category, keywords] of Object.entries(themeCategories)) {
+    if (keywords.some(keyword => words.some(word => word.includes(keyword)))) {
+      themes.add(category)
+    }
+  }
+  return themes
+}
+
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   
@@ -28,7 +62,7 @@ export default defineEventHandler(async (event) => {
 
     const styleDescriptions = {
       // Generic Styles
-      lockerroom: "Use raw, unfiltered locker room trash talk that stings. Mix personal jabs about dating failures, embarrassing moments, and brutal truths. Think ruthless high school/college athlete burns. Examples: 'still using Pokemon pickup lines on Tinder', 'gets rejected by even the spam bots', 'peaked in kindergarten when you learned to tie your shoes'. Keep it personal and make it hurt, but stay away from serious topics.",
+      dumb: "Use simple, immature, middle-school level insults. Keep it basic and childish like a 13-year-old would say.",
       dry: "Use deadpan delivery with matter-of-fact statements",
       observational: "Base humor on relatable, everyday situations",
       sarcastic: "Employ ironic, witty humor with a hint of mockery",
@@ -49,16 +83,16 @@ export default defineEventHandler(async (event) => {
     }
 
     const intensityDescriptions = {
-      1: "keeping it lighthearted and playful with gentle teasing",
-      0: "using balanced humor with honest observations and mild burns",
-      "-1": "delivering sharp reality checks with psychological insights that might sting"
+      1: "keeping it lighthearted and silly, like playground teasing or dad jokes. Should make people laugh without any hurt feelings. Think 'knock-knock joke' level of harmless fun.",
+      0: "using moderate roasting that might make someone feel embarrassed but not hurt. Like friendly banter between coworkers or casual friends. Should be okay to say in most social situations.",
+      "-1": "using dark humor that makes light of uncomfortable truths and taboo subjects. Like gallows humor that provokes both discomfort and nervous laughter. Should hit psychological weak spots and make people question whether they should laugh. Think comedy that punches at societal norms and personal insecurities, but stays within AI guidelines."
     }
 
     const prompts = {
-      smell: "IMPORTANT: Generate ONLY a smell-related description. Must be about an actual scent or odor. DO NOT include 'You smell like' in your response. BAD examples: 'You smell like a walking Wikipedia' or 'a lost dream'. GOOD examples: 'expired milk in a hot car' or 'gym socks marinated in cheap cologne'. Keep it about actual smells.",
-      hope: "IMPORTANT: Generate ONLY a specific, real-life unfortunate event. Focus on embarrassing or inconvenient situations. DO NOT include 'I hope you' in your response. BAD examples: 'find happiness' or 'learn your lesson'. GOOD examples: 'trip in front of your crush', 'get caught singing in your car at a red light', 'accidentally like your ex's Instagram post from 3 years ago'. Keep it realistic and relatable.",
-      still: "IMPORTANT: DO NOT include 'Don't you still' in your response. Generate ONLY the action that would come after those words. BAD example: 'Don't you still eat crayons'. GOOD example: 'eat crayons'",
-      heard: "IMPORTANT: Generate a single, simple action or situation. DO NOT use multiple statements or complex scenarios. DO NOT include any introductory phrases. BAD examples: 'trying to find a personality while still using a flip phone' or 'collecting dust and failing at life'. GOOD examples: 'tried to high-five your reflection' or 'bought a brain from the dollar store'. Keep it short and focused on ONE thing."
+      smell: "Generate a smell-related description that someone could smell like.",
+      hope: "Generate something unfortunate that could happen to someone.",
+      still: "Generate an embarrassing action or habit someone might do.",
+      heard: "Generate an embarrassing or questionable personal action or decision that someone made. Focus on specific things they did, like 'tried to start a boy band at age 40' or 'bought a flip phone in 2024' or 'applied to be on Love Island but got rejected'. It should be about their specific choices or actions, not general life situations."
     }
 
     if (!prompts[template]) {
@@ -68,43 +102,159 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Base configuration for all styles
+    const baseConfig = {
+      frequency_penalty: 2.0,
+      presence_penalty: 1.0,
+      max_tokens: 50
+    }
+
+    const styleConfigs = {
+      // Generic Styles
+      dumb: {
+        temperature: 0.2,  // Keep it simple and direct
+        ...baseConfig
+      },
+      dry: {
+        temperature: 0.7,
+        ...baseConfig
+      },
+      observational: {
+        temperature: 0.9,
+        ...baseConfig
+      },
+      sarcastic: {
+        temperature: 1.0,
+        ...baseConfig
+      },
+      shock: {
+        temperature: 1.1,
+        ...baseConfig
+      },
+      wordplay: {
+        temperature: 1.0,
+        ...baseConfig
+      },
+      absurd: {
+        temperature: 1.2,  // Maximum creativity
+        ...baseConfig
+      }
+    }
+
+    // Default config
+    const config = styleConfigs[style] || {
+      temperature: 0.9,
+      ...baseConfig
+    }
+
+    // Create a consistent system prompt function
+    const getSystemPrompt = (style: string, intensity: number) => `You are a roast generator specializing in ${styleDescriptions[style] || 'playful'} humor that is ${intensityDescriptions[intensity] || 'balanced'}. 
+    IMPORTANT FORMATTING RULES:
+    1. Return ONLY the completion part, nothing else
+    2. NO template phrases (like "you smell like", "i hope", etc.)
+    3. NO explanations or additional sentences`
+
+    // Initial completion
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `You are a roast generator specializing in ${styleDescriptions[style] || 'playful'} humor that is ${intensityDescriptions[intensity] || 'balanced'}. Generate creative roasts that match this style and intensity. Keep responses short and punchy. NEVER include the template text in your response, only provide the completion.`
+          content: getSystemPrompt(style, intensity)
         },
         {
           role: "user",
           content: prompts[template]
         }
       ],
-      temperature: 0.9,
-      max_tokens: 50
+      ...config
     })
 
     let response = completion.choices[0]?.message?.content?.trim() || ''
     
-    // Remove quotes and any "you're" prefix
-    response = response
-      .replace(/^["']|["']$/g, '')
-      .replace(/^you'?re\s+/i, '') // Remove "you're" or "youre" from the start
+    // Extract the completion part more reliably
+    if (response.toUpperCase().includes('COMPLETION:')) {
+      const parts = response.split(/COMPLETION:/i)
+      response = parts[parts.length - 1]  // Take everything after the last COMPLETION:
+        .replace(/^\s*\[|\]\s*$/g, '')    // Remove brackets
+        .trim()
+    }
 
-    // Apply the template on the server side
-    switch (template) {
-      case 'smell':
-        response = `You smell like ${response}`
-        break
-      case 'hope':
-        response = `I hope you ${response}`
-        break
-      case 'still':
-        response = `Don't you still ${response}`
-        break
-      case 'heard':
-        response = `I heard you ${response}. How's that been going for you?`
-        break
+    // Then apply our standard cleanup
+    response = response
+      .replace(/^completion:?\s*/i, '')   // Remove any remaining "completion:" text
+      .replace(/^you(?:'?re|'?d)?\s+/i, '')
+      .replace(/^(?:you\s+)?smell\s+like\s+/i, '')
+      .replace(/^(?:i\s+)?hope\s+(?:you\s+)?/i, '')
+      .replace(/^(?:don'?t\s+)?(?:you\s+)?still\s+/i, '')
+      .replace(/^(?:i\s+)?heard\s+(?:you\s+)?/i, '')
+      .replace(/\s*[.!?]+\s+.+$/, '')
+      .replace(/\s*,\s*.*(?:it'?s|like|that|because|and)\s+.*$/i, '')
+      .toLowerCase()
+
+    // For dumb style, enforce single phrase
+    if (style === 'dumb') {
+      response = response.split(/[,.]|\s+(?:and|but|or)\s+/)[0].trim()
+    }
+
+    // Get significant words from response (excluding common words)
+    const words = new Set(response.toLowerCase()
+      .split(/\W+/)
+      .filter(word => word.length > 3)  // Only keep words longer than 3 letters
+    )
+
+    // Check if any of the significant words were used recently
+    const now = Date.now()
+    const themes = detectThemes(response)
+    const recentlyUsedTheme = Array.from(themes).some(theme => {
+      for (const cached of lastResponses.values()) {
+        if (cached.categories.has(theme) && (now - cached.timestamp) < WORD_COOLDOWN) {
+          return true
+        }
+      }
+      return false
+    })
+
+    if (lastResponses.has(response) || recentlyUsedTheme) {
+      // Try up to 3 times to get a unique response
+      for (let i = 0; i < 3; i++) {
+        const newCompletion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: getSystemPrompt(style, intensity)
+            },
+            {
+              role: "user",
+              content: prompts[template]
+            }
+          ],
+          ...config,
+          temperature: Math.min(config.temperature + 0.2 * (i + 1), 2.0)
+        })
+        
+        const newResponse = newCompletion.choices[0]?.message?.content?.trim() || ''
+        if (!lastResponses.has(newResponse) && !newResponse.includes('gym') && !newResponse.includes('shoe')) {
+          response = newResponse
+          break
+        }
+      }
+    }
+
+    // Update cache entry
+    lastResponses.set(response, {
+      response,
+      words,
+      categories: themes,
+      timestamp: now
+    })
+
+    // Remove oldest entries if cache is too large
+    if (lastResponses.size > MAX_CACHE_SIZE) {
+      const oldest = Array.from(lastResponses.entries())
+        .sort(([,a], [,b]) => a.timestamp - b.timestamp)[0][0]
+      lastResponses.delete(oldest)
     }
 
     if (!response) {
@@ -114,8 +264,24 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Apply template at the very end, just before returning
+    const formattedResponse = (() => {
+      switch (template) {
+        case 'smell':
+          return `you smell like ${response}`
+        case 'hope':
+          return `i hope ${response}`
+        case 'still':
+          return `don't you still ${response}`
+        case 'heard':
+          return `i heard you ${response}. How's that been going for you?`
+        default:
+          return response
+      }
+    })()
+
     return {
-      completion: response
+      completion: formattedResponse
     }
   } catch (error) {
     console.error('Error generating roast:', error)
